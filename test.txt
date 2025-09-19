@@ -1,0 +1,24 @@
+// Rules for setting up files and folders in this CS learning repository:
+
+// 1. Create a main directory for the repository (e.g., "cs-learning").
+// 2. For each computer science domain or topic you explore, create a separate folder:
+//    - algorithms
+//    - data_structures
+//    - networking
+//    - security
+//    - operating_systems
+//    - databases
+//    - web_development
+//    - machine_learning
+//    - hardware
+//    - miscellaneous
+// 3. Inside each domain folder, organize files by language or subtopic as needed.
+// 4. Place a README.md in the root directory to describe the purpose of the repository and give an overview of the folder structure.
+// 5. Add a .gitignore file in the root directory to exclude unnecessary files from version control.
+// 6. Use clear and descriptive names for all files and folders.
+// 7. For experiments or notes, create a "notes" or "experiments" folder within the relevant domain.
+// 8. Store documentation, references, or guides in a "docs" folder at the root or within each domain as appropriate.
+// 9. Keep test scripts or sample inputs/outputs in a "tests" folder within each domain if needed.
+// 10. Update the README.md regularly as you add new topics or domains.
+
+
