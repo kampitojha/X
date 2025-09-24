@@ -1,0 +1,107 @@
+openapi: 3.0.3
+info:
+  title: Simple Todo API
+  version: "1.0.0"
+  description: A tiny Todo API example for learning Swagger/OpenAPI
+
+servers:
+  - url: http://localhost:3000
+    description: Local dev
+
+paths:
+  /todos:
+    get:
+      summary: List todos
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Todo'
+    post:
+      summary: Create todo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TodoCreate'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Todo'
+
+  /todos/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Get todo by id
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Todo'
+        '404':
+          description: Not Found
+    put:
+      summary: Update todo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TodoUpdate'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Todo'
+    delete:
+      summary: Delete todo
+      responses:
+        '204':
+          description: Deleted
+
+components:
+  schemas:
+    Todo:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        completed:
+          type: boolean
+      required: [id, title, completed]
+
+    TodoCreate:
+      type: object
+      properties:
+        title:
+          type: string
+        completed:
+          type: boolean
+      required: [title]
+
+    TodoUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        completed:
+          type: boolean
