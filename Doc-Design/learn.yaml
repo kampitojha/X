@@ -1,0 +1,158 @@
+# YAML (YAML Ain't Markup Language) ek human-friendly data format hai, jo config files, data exchange, etc. ke liye use hota hai.
+# Yaml me indentation (space) ka bahut importance hai. Tab nahi, sirf space use karo.
+
+# 1. Basic key-value
+name: Amit
+age: 25
+is_student: true
+
+# 2. String, number, boolean, null
+city: "Delhi"
+height: 5.9
+married: false
+nickname: null
+
+# 3. List (Array)
+fruits:
+  - apple
+  - banana
+  - mango
+
+# 4. Dictionary/Object (Nested key-value)
+address:
+  street: "MG Road"
+  city: "Mumbai"
+  pin: 400001
+
+# 5. List of objects
+students:
+  - name: Ravi
+    age: 20
+  - name: Priya
+    age: 22
+
+# 6. Comments (# se likho)
+# Ye ek comment hai, YAML me ignore hota hai
+
+# 7. Multiline string
+bio: |
+  Mera naam Amit hai.
+  Main Rust aur YAML seekh raha hoon.
+  Yeh multi-line string hai.
+
+# 8. Inline list & dict
+colors: [red, green, blue]
+marks: {math: 90, science: 95}
+
+# 9. Anchors & Aliases (repeat data)
+defaults: &def
+  country: India
+  language: Hindi
+
+person1:
+  name: Sita
+  <<: *def
+
+person2:
+  name: Ram
+  <<: *def
+
+# 10. Example: Todo list (OpenAPI jaisa)
+todos:
+  - id: 1
+    title: "Khana khana hai"
+    completed: false
+  - id: 2
+    title: "Padhai karni hai"
+    completed: true
+
+# 11. YAML me indentation galat hua toh error aayega.
+# Hamesha 2 ya 4 space ka use karo, tab nahi.
+
+# 12. YAML vs JSON
+JSON:
+  {
+    "name": "Amit",
+    "age": 25
+  }
+YAML:
+  name: Amit
+  age: 25
+
+# 13. YAML me double/single quote optional hai, jab space/special char ho tab lagao.
+
+# 14. Practice ke liye khud ka data likho, aur online YAML validator me check karo.
+
+# 15. YAML ka use: config files (docker-compose.yaml, github actions, openapi.yaml), data exchange, etc.
+
+# Bas! Ab aap YAML padh sakte ho, likh sakte ho, aur samajh sakte ho.
+# 16. Multi-document YAML (ek file me kai docs)
+# --- se naya document shuru hota hai
+# Example:
+# ---
+# name: Amit
+# age: 25
+# ---
+# name: Sita
+# age: 22
+
+# 17. Comments (# se comment likh sakte ho, YAML me ignore hota hai)
+
+# 18. Complex keys (agar key me space ya special char ho to quotes lagao)
+# "first name": Amit
+
+# 19. Null value (koi value nahi to null likh sakte ho ya blank chhod sakte ho)
+# address: null
+# ya
+# address:
+
+# 20. Boolean values (true/false ko bina quotes ke likh sakte ho)
+# is_active: true
+
+# 21. Date & time (ISO format me likhna best practice hai)
+# dob: 2000-01-01
+
+# 22. Merge multiple anchors (ek se zyada anchor merge kar sakte ho)
+# base1: &b1 {a: 1, b: 2}
+# base2: &b2 {c: 3}
+# merged:
+#   <<: [*b1, *b2]
+
+# 23. Ordered vs unordered (YAML me dict ka order preserve hota hai, lekin sabhi parser me guarantee nahi)
+
+# 24. Special values (YAML me inf, -inf, .nan likh sakte ho)
+# value: .inf
+
+# 25. YAML tags (advanced, rarely used, ! se custom type define kar sakte ho)
+# Example:
+# !mytag
+#   foo: bar
+
+# 26. Folded style (>) aur literal style (|) ka use multi-line string ke liye
+# folded: >
+#   Yeh ek
+#   multi-line
+#   string hai.
+# literal: |
+#   Yeh bhi
+#   multi-line
+#   string hai,
+#   lekin line breaks preserve honge.
+
+# 27. Sequence of maps (list ke andar dict)
+# students:
+#   - name: Amit
+#     age: 25
+#   - name: Sita
+#     age: 22
+
+# 28. Map of sequences (dict ke andar list)
+# subjects:
+#   math: [90, 95, 100]
+#   science: [85, 88, 92]
+
+# 29. YAML parsers (PyYAML, ruamel.yaml, js-yaml, etc. - har language me parser mil jayega)
+
+# 30. YAML pitfalls (tab nahi chalega, hamesha space use karo; indentation galat hua to error; anchors/aliases me dhyan do)
+
+# Ab aap YAML ke almost saare important features jaante ho!
