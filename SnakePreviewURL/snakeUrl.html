@@ -1,0 +1,198 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Snake in URL — Demo</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root{--bg:#0b0f14;--panel:#0f1720;--muted:#9aa6b2;--accent:#76e4a9}
+    body{background:var(--bg);color:#e6eef6;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);padding:18px;border-radius:12px;box-shadow:0 6px 30px rgba(2,6,23,0.6);width:520px;max-width:92%}
+    h1{margin:0 0 8px;font-size:18px}
+    p{margin:0 0 12px;color:var(--muted);font-size:13px}
+    .kbd{display:inline-block;background:var(--panel);padding:6px 8px;border-radius:6px;font-weight:600;margin-right:6px}
+    .preview{background:#020406;border-radius:8px;padding:12px;min-height:64px;display:flex;align-items:center;justify-content:center;font-family: "Courier New", monospace;font-size:20px;color:#9fb8c9}
+    .meta{display:flex;gap:8px;margin-top:10px;align-items:center}
+    .small{font-size:12px;color:var(--muted)}
+    .hint{color:var(--accent);font-weight:700}
+    .btn{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:6px 10px;border-radius:8px;color:var(--muted);cursor:pointer}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Snake in URL — Mini demo</h1>
+    <p>Copy to CodePen and run. Controls: <span class="kbd">↑↓←→</span> or <span class="kbd">H J K L</span>. Space = pause.</p>
+
+    <div class="preview" id="preview">Loading…</div>
+
+    <div class="meta">
+      <div class="small">Hash preview (what updates the address bar):</div>
+      <button class="btn" id="resetBtn">Reset</button>
+      <div style="flex:1"></div>
+      <div class="small hint">Tip: look at the address bar while it runs ✨</div>
+    </div>
+  </div>
+
+<script>
+/*
+  How it works (super short):
+  - We have a tiny pixel grid (width x height).
+  - Pixels are grouped into 2x4 blocks, each block becomes one Braille character.
+  - We render snake/apple to the pixel grid, convert blocks -> braille, and set location.hash = string.
+  - URL changes show the "game" inside the address bar.
+*/
+
+/* ---- Config ---- */
+const PIX_W = 16;    // pixel width (must be divisible by 2)
+const PIX_H = 8;     // pixel height (must be divisible by 4)
+const CELL_W = 2;
+const CELL_H = 4;
+const TICK_MS = 150;
+
+/* ---- State ---- */
+let dir = {x:1,y:0}; // start moving right
+let snake = [{x:2,y:2},{x:1,y:2},{x:0,y:2}];
+let apple = null;
+let paused = false;
+let timer = null;
+const preview = document.getElementById('preview');
+const resetBtn = document.getElementById('resetBtn');
+
+/* ---- Helpers ---- */
+function randPixel() {
+  return { x: Math.floor(Math.random()*PIX_W), y: Math.floor(Math.random()*PIX_H) };
+}
+function placeApple() {
+  while(true){
+    const p = randPixel();
+    if(!snake.some(s=>s.x===p.x && s.y===p.y)){
+      apple = p; break;
+    }
+  }
+}
+function equals(a,b){return a.x===b.x && a.y===b.y}
+
+/* Convert pixel grid into braille string */
+function renderToBraille() {
+  // Build pixel map
+  const grid = Array.from({length:PIX_H},()=>Array(PIX_W).fill(0));
+  // draw snake pixels (1)
+  snake.forEach((s,i)=> grid[s.y][s.x] = 1);
+  // draw apple pixel (2) so we can distinguish in preview (visual only)
+  if(apple) grid[apple.y][apple.x] = 2;
+
+  const cols = PIX_W / CELL_W;
+  const rows = PIX_H / CELL_H;
+  let out = "";
+  for(let br=0; br<rows; br++){
+    let line = "";
+    for(let bc=0; bc<cols; bc++){
+      let val = 0;
+      // iterate 2x4 block
+      for(let dy=0; dy<CELL_H; dy++){
+        for(let dx=0; dx<CELL_W; dx++){
+          const px = bc*CELL_W + dx;
+          const py = br*CELL_H + dy;
+          const pixel = grid[py][px];
+          if(pixel){
+            // Map (dx,dy) to braille dot number:
+            // (0,0)=1; (0,1)=2; (0,2)=3; (0,3)=7;
+            // (1,0)=4; (1,1)=5; (1,2)=6; (1,3)=8;
+            let dot = 0;
+            if(dx===0 && dy===0) dot = 1;
+            if(dx===0 && dy===1) dot = 2;
+            if(dx===0 && dy===2) dot = 3;
+            if(dx===0 && dy===3) dot = 7;
+            if(dx===1 && dy===0) dot = 4;
+            if(dx===1 && dy===1) dot = 5;
+            if(dx===1 && dy===2) dot = 6;
+            if(dx===1 && dy===3) dot = 8;
+            val |= (1 << (dot-1));
+          }
+        }
+      }
+      line += String.fromCharCode(0x2800 + val);
+    }
+    out += line;
+    if(br < rows-1) out += '\n';
+  }
+  return out;
+}
+
+/* Update URL hash and preview box */
+function flushRender(){
+  const braille = renderToBraille();
+  // Set hash directly (browser will percent-encode as needed)
+  location.hash = braille;
+  // show nicer preview in panel: replace newline with <br>
+  preview.innerText = braille;
+}
+
+/* Game step */
+function step(){
+  if(paused) return;
+  const head = {...snake[0], x: snake[0].x + dir.x, y: snake[0].y + dir.y};
+
+  // Wrap-around (optional) — comment this block to make walls kill you
+  head.x = (head.x + PIX_W) % PIX_W;
+  head.y = (head.y + PIX_H) % PIX_H;
+
+  // Collision with self?
+  if(snake.some(s=>equals(s, head))){
+    // reset simple
+    resetGame();
+    return;
+  }
+
+  snake.unshift(head);
+
+  // Ate apple?
+  if(apple && equals(head, apple)){
+    placeApple();
+  } else {
+    snake.pop();
+  }
+
+  flushRender();
+}
+
+/* Controls */
+function setDir(newDir){
+  // prevent reverse
+  if(snake.length>1 && newDir.x === -dir.x && newDir.y === -dir.y) return;
+  dir = newDir;
+}
+
+/* Start / reset */
+function resetGame(){
+  dir = {x:1,y:0};
+  snake = [{x:2,y:2},{x:1,y:2},{x:0,y:2}];
+  placeApple();
+  flushRender();
+}
+
+/* Init */
+function startLoop(){
+  if(timer) clearInterval(timer);
+  timer = setInterval(step, TICK_MS);
+}
+
+/* Key handling */
+window.addEventListener('keydown', (e)=>{
+  if(e.key === ' '){ paused = !paused; return e.preventDefault(); }
+  const k = e.key.toLowerCase();
+  if(k === 'arrowup' || k === 'w' || k === 'k'){ setDir({x:0,y:-1}); }
+  if(k === 'arrowdown' || k === 's' || k === 'j'){ setDir({x:0,y:1}); }
+  if(k === 'arrowleft' || k === 'a' || k === 'h'){ setDir({x:-1,y:0}); }
+  if(k === 'arrowright' || k === 'd' || k === 'l'){ setDir({x:1,y:0}); }
+});
+
+/* Button */
+resetBtn.addEventListener('click', ()=>{ resetGame(); });
+
+/* first run */
+resetGame();
+startLoop();
+</script>
+</body>
+</html>
